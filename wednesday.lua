@@ -1,3 +1,5 @@
+---@diagnostic disable: undefined-global
+
 getgenv().silent = true
 
 game:GetService("Players").LocalPlayer.Idled:Connect(function()
@@ -213,7 +215,7 @@ visuals_section_other:AddToggle({
    flag = "visuals_show_fov"
 }):AddColor({
    flag = "visuals_fov",
-   color = Color3.fromRGB(255, 255, 255),
+   color = Color3.fromRGB(1, 1, 1),
    trans = 1
 })
 
@@ -411,8 +413,8 @@ misc_section_cases:AddButton({
 
       local filter = {}
 
-      for skin, info in next, interfaces.camo_database do
-        if (info.Rarity ~= 4) then continue end
+      for skin, skin_info in next, interfaces.camo_database do
+        if (skin_info.Rarity ~= 4) then continue end
 
         filter[skin] = true
       end
@@ -463,8 +465,8 @@ misc_section_cases:AddButton({
 
       local filter = {}
 
-      for skin, info in next, interfaces.camo_database do
-        if (info.Rarity ~= 4) then continue end
+      for skin, skin_info in next, interfaces.camo_database do
+        if (skin_info.Rarity ~= 4) then continue end
 
         filter[skin] = true
       end
@@ -765,7 +767,7 @@ cheat:detour("send", interfaces.net, function(original, self, event, ...)
 end)
 
 -- Backtrack helper
-cheat:heart_beat(function(delta)
+cheat:heart_beat(function()
    local function hook_player(player)
       local player_updater = interfaces.replication.getupdater(player)
       local player_info = cheat.backtrack.info[player]
@@ -813,13 +815,13 @@ cheat:heart_beat(function(delta)
          continue
       end
 
-      local record_tick = tick()
+      local current_tick = tick()
 
-      player_info.records[record_tick] = {}
-      player_info.records[record_tick].parts = {unpack(player_info.parts)}
+      player_info.records[current_tick] = {}
+      player_info.records[current_tick].parts = {unpack(player_info.parts)}
 
       -- Validity check
-      for record_tick, record_info in next, player_info.records do
+      for record_tick, _ in next, player_info.records do
          if (tick() - record_tick > 3) then
             player_info.records[record_tick] = nil
          end
@@ -833,9 +835,9 @@ cheat:heart_beat(function(delta)
    end
 end, function()
    for _, player in next, game:GetService("Players"):GetPlayers() do
-      local function unhook_player(player)
-         local player_updater = interfaces.replication.getupdater(player)
-         local player_info = cheat.backtrack.info[player]
+      local function unhook_player(hooked_player)
+         local player_updater = interfaces.replication.getupdater(hooked_player)
+         local player_info = cheat.backtrack.info[hooked_player]
 
          player_updater.getpos = player_info.old_getpos
       end
@@ -856,40 +858,6 @@ cheat:heart_beat(function(delta)
 
    local function get_fov(screen_vector_1, screen_vector_2)
       return (screen_vector_1 - screen_vector_2).Magnitude
-   end
-
-   local function get_closest_record(player)
-      local closest_record
-      local closest_fov = math.huge
-
-      local player_info = cheat.backtrack.info[player]
-
-      for _, record in next, player_info.records do
-         local player_parts = record.parts
-
-         if (not player_parts) then continue end
-
-         local player_screen_vector, player_on_screen = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(player_parts.torso.Position)
-
-         for _, part in next, player_parts do
-            if (player_on_screen) then break end
-
-            player_screen_vector, player_on_screen = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(part.Position)
-         end
-
-         if (not player_on_screen) then continue end
-
-         local viewport_size = game:GetService("Workspace").CurrentCamera.ViewportSize
-
-         local player_fov = get_fov(viewport_size / 2, Vector2.new(player_screen_vector.X, player_screen_vector.Y))
-
-         if (player_fov > ui.flags["aimbot_fov"] * interfaces.char.unaimedfov / game:GetService("Workspace").CurrentCamera.FieldOfView) then continue end
-
-         if (closest_fov < player_fov) then continue end
-
-         closest_player = player
-         closest_fov = player_fov
-      end
    end
 
    local function get_closest_player()
@@ -940,20 +908,20 @@ cheat:heart_beat(function(delta)
       if (not player_parts) then return end
 
       for name, part in next, player_parts do
-         if(not part) then continue end
-         if(name == "rootpart") then continue end
+         if (not part) then continue end
+         if (name == "rootpart") then continue end
 
          local part_screen_vector, part_on_screen = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(part.Position)
 
-         if(not part_on_screen) then continue end
+         if (not part_on_screen) then continue end
 
          local viewport_size = game:GetService("Workspace").CurrentCamera.ViewportSize
 
          local part_fov = get_fov(viewport_size / 2, Vector2.new(part_screen_vector.X, part_screen_vector.Y))
 
-         if(part_fov > ui.flags["aimbot_fov"] * interfaces.char.unaimedfov / game:GetService("Workspace").CurrentCamera.FieldOfView) then continue end
+         if (part_fov > ui.flags["aimbot_fov"] * interfaces.char.unaimedfov / game:GetService("Workspace").CurrentCamera.FieldOfView) then continue end
 
-         if(closest_fov < part_fov) then continue end
+         if (closest_fov < part_fov) then continue end
 
          closest_part = part
          closest_fov = part_fov
@@ -1024,8 +992,8 @@ cheat:heart_beat(function(delta)
       local is_player_part = false
 
       for _, part in next, player_parts do
-         if(is_player_part) then break end
-         if(not ui.flags["aimbot_visible"]) then break end
+         if (is_player_part) then break end
+         if (not ui.flags["aimbot_visible"]) then break end
 
          local camra_direction = part.Position - camera_position
 
@@ -1220,7 +1188,7 @@ cheat:render_stepped(1, function()
                Center = true,
                Outline = true,
                Visible = false,
-               Color = Color3.new(255, 255, 255)
+               Color = Color3.new(1, 1, 1)
             })
          end
 
