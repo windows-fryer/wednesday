@@ -1049,45 +1049,6 @@ end, function()
 
 end)
 
--- AC130 Mode
---[[
-task.spawn(function()
-   while (task.wait()) do
-      if (ui.flags["misc_ac130_mode"]) then
-         for _, player in next, game:GetService("Players"):GetPlayers() do
-            if (player == game:GetService("Players").LocalPlayer) then continue end
-            if (player.Team == game:GetService("Players").LocalPlayer.Team) then continue end
-
-            if (not interfaces.char.alive) then continue end
-            if (not interfaces.logic.currentgun) then continue end
-
-            task.wait(5)
-
-            local player_parts = interfaces.replication.getbodyparts(player)
-
-            if (not player_parts) then continue end
-
-            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Anchored = true
-
-            local old_position = Vector3.new(0, 100, 0)
-
-            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(old_position)
-
-            task.wait(1)
-
-            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player_parts.torso.Position + Vector3.new(0, 7, 0))
-
-            interfaces.net:send("spotplayers", {player}, interfaces.clock.getTime())
-
-            task.wait()
-
-            game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(old_position)
-         end
-      end
-   end
-end)
-]]--
-
 -- Visuals
 cheat:render_stepped(1, function()
    -- Thanks nata :-)
